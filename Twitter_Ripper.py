@@ -1,20 +1,13 @@
-# ====================================================================
-# Author 				: swc21
-# Date 					: 2018-03-14 09:40:57
-# Project 				: ClusterFiles
-# File Name 			: Twitter_Ripper
-# Last Modified by 		: swc21
-# Last Modified time 	: 2018-03-14 10:28:59
-# ====================================================================
-#
-# SOl Courtney Columbia U Department of Astronomy and Astrophysics NYC 2016
-# swc2124@columbia.edu
-#--[DESCRIPTION]---------------------------------------------------------#
-'''
-Date: May 2016
-Handeler for twitter json text
-'''
-#--[PROGRAM-OPTIONS]------------------------------------------------------#
+# ============================================================================
+# Author                : swc21
+# Date                  : 2018-03-14 11:22:31
+# Project               : GitHub
+# File Name             : Twitter_Ripper
+# Last Modified by      : swc21
+# Last Modified time    : 2018-03-14 12:29:22
+# ============================================================================
+# 
+
 try:
     from collections import Counter, defaultdict
     from nltk.tokenize import word_tokenize

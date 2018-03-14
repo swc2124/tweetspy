@@ -1,20 +1,15 @@
-# ====================================================================
-# Author 				: swc21
-# Date 					: 2018-03-14 09:40:57
-# Project 				: ClusterFiles
-# File Name 			: UDP_Client
-# Last Modified by 		: swc21
-# Last Modified time 	: 2018-03-14 11:07:41
-# ====================================================================
-#
-# SOl Courtney Columbia U Department of Astronomy and Astrophysics NYC 2016
-# swc2124@columbia.edu
-#--[DESCRIPTION]---------------------------------------------------------#
-'''
-Date: May 2016
-UDP Client for the Cluster
-'''
-#--[PROGRAM-OPTIONS]------------------------------------------------------#
+# ============================================================================
+# Author                : swc21
+# Date                  : 2018-03-14 11:22:31
+# 
+# Project               : GitHub
+# File Name             : UDP_Client
+# 
+# Last Modified by      : swc21
+# Last Modified time    : 2018-03-14 12:51:39
+# ============================================================================
+# 
+
 import psutil
 import socket
 import sys
