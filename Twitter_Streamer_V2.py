@@ -18,22 +18,21 @@ Handeler for twitter stream
 
 #--[IMPORTS]-----------------------------------------------------------------#
 
-import codecs
-import os
-import sys
-
-from time import gmtime
-from time import sleep
-from time import strftime
-
-import tweepy
-from tweepy import API
-from tweepy import OAuthHandler
+from tweepy import StreamListener
 from tweepy import Stream
+from time import gmtime, strftime, sleep
+import json
+import sys
+import os
+from tweepy import Stream, OAuthHandler, API
 
+from time import gmtime,strftime,sleep
+
+import os, tweepy
+
+import codecs
 from kitchen.text.converters import getwriter
 
-from slistener import SListener
 
 #--[PROGRAM-OPTIONS]---------------------------------------------------------#
 
@@ -52,9 +51,7 @@ all_lists = [ru_words, name_words, en_words]
 Track = []
 for wrd_list in all_lists:
     for _wrd in wrd_list:
-        Track.append(_wrd.decode("utf-8").upper())
-        Track.append(_wrd.decode("utf-8").lower())
-        Track.append(_wrd.decode("utf-8").Title)
+        Track.append(_wrd.decode("utf-8"))
 
 
 access_token = "631011579-NzyCtmF6bvAawqQ25dPfNe4jy7q7hA8bdjn5tddO"
@@ -79,7 +76,7 @@ l = SListener(api=api)
 try:
 
     os.system('clear')
-    print 'starting now'
+    print('starting now')
     Stream(auth, l).filter(track=Track, async=True)
 
 except KeyboardInterrupt, e:
