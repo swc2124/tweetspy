@@ -12,17 +12,14 @@ UDP Client for the Cluster
 
 #--[PROGRAM-OPTIONS]------------------------------------------------------#
 
-from time import gmtime, strftime
-
 from subprocess import PIPE, Popen
+
+from time import gmtime, strftime, sleep
+
+import socket, time
 
 import psutil
 
-import socket
-
-import time
-
-import sys
 
 #--[PROGRAM-OPTIONS]------------------------------------------------------#
 
@@ -70,40 +67,38 @@ def Network_Traf(more=False):
 		pnic_after = psutil.net_io_counters(pernic=True)
 		return str(tot_after.bytes_sent), str(tot_after.bytes_recv).rstrip('\n')
 	except:
-		return '1'
+		return '1','1'
 
-def Log_File():
-	cpu_temp = str(get_cpu_temperature())
-	cpu_usage = str(psutil.cpu_percent())
-	cpu_freq = get_cpu_freq()
-	core_volts = get_cpu_volts()
-	free_ram = str(psutil.virtual_memory().percent)
-	sent, recv = Network_Traf()
-	hostname = str(socket.gethostname())
-	return str(hostname+' '+cpu_temp+' '+cpu_usage+' '+cpu_freq+' '+core_volts+' '+free_ram+' '+sent+' '+recv)
+def Log_File(jobs_done):
+
+	cpu_temp 	= str(get_cpu_temperature()) 
+	cpu_usage 	= str(psutil.cpu_percent())
+	cpu_freq 	= get_cpu_freq()
+	core_volts	= get_cpu_volts()
+	free_ram 	= str(psutil.virtual_memory().percent)
+	sent, recv 	= Network_Traf()
+	hostname 	= str(socket.gethostname())
+	return str(hostname+' '+str(jobs_done)+' '+cpu_temp+' '+cpu_usage+' '+cpu_freq+' '+core_volts+' '+free_ram+' '+sent+' '+recv)
 
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+def Report(jobs_done):
 
-server_address = ('192.168.1.103', 10000)
 
-message = Log_File()
+	sock = socket.socket()
 
-try:
+	server_address = ('192.168.1.103', 15000)
+
+	message = Log_File(jobs_done)
 
 	try:
-
-		while True:
 			
-			#print >>sys.stderr, 'sending "%s"' % message
-			sent = sock.sendto(message, server_address)
-			time.sleep(2)
+		#print >>sys.stderr, 'sending "%s"' % message
+		sock.connect(server_address)
+		sock.sendall(message)
+
 
 	finally:
 
 		#print >>sys.stderr, 'closing socket'
 		sock.close()
 
-except (KeyboardInterrupt, SystemExit):
-
-	print ' Closing Socket'
