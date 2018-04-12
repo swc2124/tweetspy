@@ -1,2 +1,2 @@
 # twitterlistener
-[![video](https://img.youtube.com/vi/https://youtu.be/jc_q7n1tGVQ/0.jpg)](https://youtu.be/jc_q7n1tGVQ)
+[![Audi R8](http://img.youtube.com/vi/KOxbO0EI4MA/0.jpg)](https://www.youtube.com/watch?v=KOxbO0EI4MA "Audi R8")
