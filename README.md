@@ -1,4 +1,5 @@
-<video src="http://www.columbia.edu/~swc2124/assets/fullscreen.mp4" width="320" height="200" controls preload></video>
+### Full screen demo of all 34 computers running
+[![streamer.py](http://img.youtube.com/vi/66tErZ3Im3A/0.jpg)](https://www.youtube.com/watch?v=66tErZ3Im3A)
 
 ### Streaming Tweets to disc - streamer.py
 [![streamer.py](http://img.youtube.com/vi/UI9wrz7934Q/0.jpg)](https://www.youtube.com/watch?v=UI9wrz7934Q)
