@@ -1,3 +1,5 @@
+Have a look at the videos below for an idea of what this collection of programs can do.
+
 ### Full screen demo of all 34 computers running
 [![streamer.py](http://img.youtube.com/vi/66tErZ3Im3A/0.jpg)](https://www.youtube.com/watch?v=66tErZ3Im3A)
 
