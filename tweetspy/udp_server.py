@@ -1,4 +1,4 @@
-#SOl Courtney Columbia U Department of Astronomy and Astrophysics NYC 2016 
+#SOl Courtney Columbia U Department of Astronomy and Astrophysics NYC 2016
 #swc2124@columbia.edu
 
 #--[DESCRIPTION]---------------------------------------------------------#
@@ -30,23 +30,23 @@ LOG_FILE = '/home/sol/CLUSTER_RAID/'
 
 
 LookUp = {
-	
+
 	'Wolf-01': 0,
 	'Wolf-02': 0,
 	'Wolf-03': 0,
 	'Wolf-04': 0,
 	'Wolf-05': 0,
 	'Wolf-06': 0,
-	'Wolf-07': 0, 
+	'Wolf-07': 0,
 	'Wolf-08': 0,
 
-	'Wolf-09': 0, 
-	'Wolf-10': 0, 
-	'Wolf-11': 0, 
-	'Wolf-12': 0, 
-	'Wolf-13': 0, 
-	'Wolf-14': 0, 
-	'Wolf-15': 0, 
+	'Wolf-09': 0,
+	'Wolf-10': 0,
+	'Wolf-11': 0,
+	'Wolf-12': 0,
+	'Wolf-13': 0,
+	'Wolf-14': 0,
+	'Wolf-15': 0,
 	'Wolf-16': 0,
 
 	'BPI-M1-01': 0,
@@ -83,15 +83,14 @@ hostname = socket.gethostname()
 s.bind(server_address)
 s.listen(100)
 
-Names = ['Host', 'Jobs_done',
-         'CPU_temp', 'CPU_usage', 'CPU_freq', 'Core_volts', 'Ram_usage',
-         'Sent', 'Recv']
+Names = ['Host', 'Jobs_done', 'CPU_temp', 'CPU_usage', 'CPU_freq', 'Core_volts',
+		 'Ram_usage', 'Sent', 'Recv']
 
 Dtype = ['S10', np.uint64,
          np.float16, np.float16, np.float16, np.float16, np.float16,
          np.uint64, np.uint64]
 
-Log_Table = Table(names=Names,dtype=Dtype)
+Log_Table = Table(names=Names, dtype=Dtype)
 
 while True:
 
@@ -106,12 +105,12 @@ while True:
 			LookUp[_name] += int(_row[1])
 			_row[1] = LookUp[_name]
 			Log_Table[_index] = _row
-			Log_Table[_index]['Jobs_done'] = LookUp[_name] 
+			Log_Table[_index]['Jobs_done'] = LookUp[_name]
 		else:
 			LookUp[_name] += int(_row[1])
 			Log_Table.add_row(_row)
-		
-		Log_Table.sort("Jobs_done") 
+
+		Log_Table.sort("Jobs_done")
 		Log_Table.reverse()
 		conn.close()
 		os.system('clear')

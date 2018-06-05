@@ -1,4 +1,4 @@
-#SOl Courtney Columbia U Department of Astronomy and Astrophysics NYC 2016 
+#SOl Courtney Columbia U Department of Astronomy and Astrophysics NYC 2016
 #swc2124@columbia.edu
 
 #--[DESCRIPTION]---------------------------------------------------------#
@@ -35,7 +35,7 @@ import csv
 
 nltk.data.path.append('/root/SHARED/nltk_data/')
 
-hostname            = socket.gethostname()
+hostname = socket.gethostname()
 
 
 if hostname == 'sol-Linux':
@@ -54,56 +54,56 @@ def ct(text, colour=WHITE):
     return seq
 
 def list_files(path):
-    # returns a list of names (with extension, without full path) of all files 
+    # returns a list of names (with extension, without full path) of all files
     # in folder path
     files = []
     for name in os.listdir(path):
         if os.path.isfile(os.path.join(path, name)):
             files.append(name)
 
-    return files 
+    return files
 
 
 Names = {'PRP$':'pronoun, possessive','VBG':'verb, present participle or gerund',
-        'VBD':'verb, past tense','VBN':'verb, past participle','VBP':'verb, present tense not 3rd person singular', 
-        'WDT':'determiner, WH','JJ':'adjective or numeral, ordinal','WP': 'pronoun, WH', 
-        'VBZ':'verb, present tense 3rd person singular','DT':'determiner','RP':'particle', 
+        'VBD':'verb, past tense','VBN':'verb, past participle','VBP':'verb, present tense not 3rd person singular',
+        'WDT':'determiner, WH','JJ':'adjective or numeral, ordinal','WP': 'pronoun, WH',
+        'VBZ':'verb, present tense 3rd person singular','DT':'determiner','RP':'particle',
         'NN':'noun, common, singular or mass','TO':'"to" as preposition or infinitive marker',
         'PRP':'pronoun, personal','RB':'adverb','NNS':'noun, common plural','NNP':'noun, proper singular',
         'VB':'verb, base form','WRB':'adverb, WH', 'CC':'conjunction, coordinating', 'RBR':'adverb, comparative',
-        'CD':'cardinal numeral','-NONE-':'No matching tags found','EX':'existential, there there', 
-        'IN':'conjunction or subordinating preposition','WP$':'pronoun, possessive WH', 
+        'CD':'cardinal numeral','-NONE-':'No matching tags found','EX':'existential, there there',
+        'IN':'conjunction or subordinating preposition','WP$':'pronoun, possessive WH',
         'MD':'modal auxiliary', 'JJS':'adjective, superlative', 'JJR':'adjective, comparative',
-        'PDT': 'pre-determiner','RBS':'adverb, superlative', 'FW': 'foreign word', 
+        'PDT': 'pre-determiner','RBS':'adverb, superlative', 'FW': 'foreign word',
         'NNPS': 'noun, proper plural', 'UH': 'interjection'}
 
 
 Color_Keys = {'NN':GREEN, 'NNS':GREEN, 'NNP':GREEN, 'NNPS':GREEN, 'MD':YELLOW,
               'JJR': YELLOW, 'JJS': YELLOW,  'JJ': YELLOW, 'DT': YELLOW,
-              'VBG':BLUE,'VBD':BLUE,'VBN':BLUE,'VBP':BLUE,'VBZ':BLUE,'VB':BLUE, 
-              'RBS': MAGENTA,'RBR': MAGENTA,'RB': MAGENTA,'WRB': MAGENTA, 
+              'VBG':BLUE,'VBD':BLUE,'VBN':BLUE,'VBP':BLUE,'VBZ':BLUE,'VB':BLUE,
+              'RBS': MAGENTA,'RBR': MAGENTA,'RB': MAGENTA,'WRB': MAGENTA,
               'PRP$':CYAN, 'PRP':CYAN, 'WP':CYAN, 'WP$':CYAN, "IN": RED,
               }
 
-names = [ 'time', 'weekday','PRP$', 'VBG', 'VBD', 
-            'VBN', 'VBP', 'WDT', 'JJ', 'WP', 'VBZ', 'DT', 
-            'RP', 'NN', 'TO', 'PRP', 'RB', 'NNS', 'NNP', 
-            'VB', 'WRB', 'CC', 'RBR', 'CD', '-NONE-', 
-            'EX', 'IN', 'WP$', 'MD', 'JJS', 'JJR', 
-            'PDT', 'RBS' , 'FW', 'UH'] 
+names = [ 'time', 'weekday','PRP$', 'VBG', 'VBD',
+            'VBN', 'VBP', 'WDT', 'JJ', 'WP', 'VBZ', 'DT',
+            'RP', 'NN', 'TO', 'PRP', 'RB', 'NNS', 'NNP',
+            'VB', 'WRB', 'CC', 'RBR', 'CD', '-NONE-',
+            'EX', 'IN', 'WP$', 'MD', 'JJS', 'JJR',
+            'PDT', 'RBS' , 'FW', 'UH']
 
-dtypes = [ 'float','S10','int', 'int', 'int', 
+dtypes = [ 'float','S10','int', 'int', 'int',
             'int', 'int', 'int', 'int', 'int', 'int',
-            'int', 'int', 'int', 'int', 'int', 'int', 
+            'int', 'int', 'int', 'int', 'int', 'int',
             'int', 'int', 'int', 'int', 'int', 'int',
             'int', 'int', 'int', 'int', 'int', 'int',
             'int', 'int', 'int', 'int', 'int', 'int']
 
-Record_book_keys = ['PRP$', 'VBG', 'VBD', 
-            'VBN', 'VBP', 'WDT', 'JJ', 'WP', 'VBZ', 'DT', 
-            'RP', 'NN', 'TO', 'PRP', 'RB', 'NNS', 'NNP', 
-            'VB', 'WRB', 'CC', 'RBR', 'CD', '-NONE-', 
-            'EX', 'IN', 'WP$', 'MD', 'JJS', 'JJR', 
+Record_book_keys = ['PRP$', 'VBG', 'VBD',
+            'VBN', 'VBP', 'WDT', 'JJ', 'WP', 'VBZ', 'DT',
+            'RP', 'NN', 'TO', 'PRP', 'RB', 'NNS', 'NNP',
+            'VB', 'WRB', 'CC', 'RBR', 'CD', '-NONE-',
+            'EX', 'IN', 'WP$', 'MD', 'JJS', 'JJR',
             'PDT', 'RBS' , 'FW', 'UH']
 
 plt_clrs = ['indigo','gold','hotpink','firebrick','indianred','sage','yellow','mistyrose',
@@ -126,28 +126,28 @@ try:
         words = []
         print ct("-" * 70, WHITE)
         print ct(datetime.now().strftime("%a %b %d, %Y %H:%M"), BLUE) + "\t -- \tlast n_words: " + ct(str(last_total_words), RED)
-        
+
         while date == Date:
-            
+
             for word_set in list_files(OUT_PUT_PATH):
                 with open(OUT_PUT_PATH+word_set,'r') as f:
                     page = f.read()
                 with open(OUT_PUT_PATH+word_set,'w') as f:
                     pass
                     #os.system('cat ~/SHARED/wordsloded.txt')
-                    
+
                 #os.system('cat ~/SHARED/cleaning.txt')
                 new_words = [tweet.replace('\n','').replace('[','').replace(']','').replace('"','').replace(' ','') for tweet in page.split(',') ]
-                
+
                 words += [i for i in new_words if i != '']
                 #print word_set, 'has ', len(words)
                 #sleep(3)
                 #print words
                 #os.system('cat ~/SHARED/counting.txt')
                 sys.stdout.write("\r" + ct(datetime.now().strftime("%H:%M:%S"), BLUE) + " :\t" +  ct(str(len(words)), GREEN))
-            
+
             date = datetime.now().strftime("%a_%b_%d_%Y_%H_%M")
-        
+
         last_total_words = total_words
         total_words = len(words)
         sys.stdout.write("\n")
@@ -185,8 +185,8 @@ try:
                     num += n
             plot_data.append((wrd_typ, num))
         # print plot_data
-        
-        
+
+
         for wrd_typ, num in plot_data:
             _num = round(np.log10(num), 1)
             # print wrd_typ, _num

@@ -13,7 +13,7 @@ from __future__ import print_function
 '''
 Date: May 2016
 
-Handeler for twitter stream
+Handler for twitter stream
 '''
 
 #--[IMPORTS]-----------------------------------------------------------------#
