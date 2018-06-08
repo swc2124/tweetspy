@@ -1,53 +1,29 @@
+"""[summary]
 
-
+[description]
+"""
 from tweepy import StreamListener
-from time import sleep
-from datetime import datetime
 
-import json
-import sys
-import os
-
-import codecs
-BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
-
-
-def ct(text, colour=WHITE):
-
-    seq = "\x1b[1;%dm" % (30 + colour) + text + "\x1b[0m"
-
-    return seq
-
-
-langs = {'ar': 'Arabic', 'bg': 'Bulgarian', 'ca': 'Catalan', 'cs': 'Czech',
-         'da': 'Danish', 'de': 'German', 'el': 'Greek', 'en': 'English',
-         'es': 'Spanish', 'et': 'Estonian', 'fa': 'Persian', 'fi': 'Finnish',
-         'fr': 'French', 'hi': 'Hindi', 'hr': 'Croatian', 'hu': 'Hungarian',
-         'id': 'Indonesian', 'is': 'Icelandic', 'it': 'Italian', 'iw': 'Hebrew',
-         'ja': 'Japanese', 'ko': 'Korean', 'lt': 'Lithuanian', 'lv': 'Latvian',
-         'ms': 'Malay', 'nl': 'Dutch', 'no': 'Norwegian', 'pl': 'Polish',
-         'pt': 'Portuguese', 'ro': 'Romanian', 'ru': 'Russian', 'sk': 'Slovak',
-         'sl': 'Slovenian', 'sr': 'Serbian', 'sv': 'Swedish', 'th': 'Thai',
-         'tl': 'Filipino', 'tr': 'Turkish', 'uk': 'Ukrainian', 'ur': 'Urdu',
-         'vi': 'Vietnamese', 'zh_CN': 'Chinese (simplified)',
-         'zh_TW': 'Chinese (traditional)'}
-
-tweet_keys = [
-    u'quote_count', u'contributors', u'truncated', u'text', u'is_quote_status', u'in_reply_to_status_id',
-    u'reply_count', u'id', u'favorite_count', u'entities', u'retweeted', u'coordinates', u'timestamp_ms',
-    u'source', u'in_reply_to_screen_name', u'id_str', u'retweet_count', u'in_reply_to_user_id', u'favorited',
-    u'retweeted_status', u'user', u'geo', u'in_reply_to_user_id_str', u'lang', u'created_at', u'filter_level',
-    u'in_reply_to_status_id_str', u'place']
+from .tweetspy_lib import PATH_NEW_TWEETS
+from .tweetspy_lib import
+from .tweetspy_lib import
+from .tweetspy_lib import
+from .tweetspy_lib import
+from .tweetspy_lib import
+from .tweetspy_lib import
+from .tweetspy_lib import
 
 
 class SListener(StreamListener):
 
-    def __init__(self, api=None, fprefix='/root/SHARED/Tweets/'):
+    def __init__(self, api):
+        super(SListener, self).__init__()
         self.buffer_size = int(3 * 1e6)
-        self.api = api or API()
+        self.api = api
         self.counter = 0
-        self.fprefix = fprefix
-        self.output = codecs.open(self.fprefix + datetime.now().strftime("%Y%b%a%d-%H_%M_%S_%f") + '.json',
+        self.fprefix = PATH_NEW_TWEETS
+        fh0 = datetime.now().strftime("%Y%b%a%d-%H_%M_%S_%f") + '.json'
+        self.output = open(self.fprefix + ,
                                   mode='w',
                                   buffering=self.buffer_size)
         self.delout = open('delete.txt', 'a')
@@ -77,11 +53,11 @@ class SListener(StreamListener):
             _time = ct('[ ', GREEN) + ct(raw_tweet['created_at'].split(' ')[3].encode("utf-8", 'replace'), WHITE) + ct(' ]', GREEN)
             _user = ct(raw_tweet['user']['screen_name'].encode("utf-8", 'replace'), MAGENTA)
             if raw_tweet['lang'] in langs.keys():
-                
+
                 _lang = ct('[ ', GREEN) + ct(langs[raw_tweet["lang"]], YELLOW) + ct(' ]', GREEN)
             else:
                 _lang = ct('[ ', YELLOW) + ct("UNKNOWN", RED) + ct(' ]', YELLOW)
-            
+
             _text = ct(raw_tweet['text'].encode("utf-8", 'replace'), CYAN)
             _message = _counter + "\t" + _time + " " + _lang + "\t" + ct(' @ ', BLUE) + _user + " " * _space + " : " + _text
             print _message.replace("\n", "")
@@ -104,12 +80,12 @@ class SListener(StreamListener):
             sys.stderr.write(' --> [SAVED FILE]\n')
             sys.stderr.write(' --> [NEW FILE] : ' + self.fprefix +
                              datetime.now().strftime("%Y%b%a%d-%H_%M_%S_%f") + '.json\n')
-            
+
 
             with open("/root/SHARED/tweetspy/kill.txt", "r") as ktxt:
                 f = ktxt.readlines()
                 if f[0] == '0\n':
-                    if raw_input("\n --> Do you want to kill? yes/NO :" in ["Y", "y", "YES", "Yes", "yes"]):
+                    if raw_input("\n --> Do you want to kill? yes/[no] :" in ["Y", "y", "YES", "Yes", "yes"]):
                         sys.stderr.write(" --> KILLED\n")
                         sys.stderr.write('     ----------------------------\n')
                         sys.exit(0)

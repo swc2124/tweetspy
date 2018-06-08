@@ -14,6 +14,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import json
+import sys
 import nltk
 import os
 import psutil
@@ -25,15 +27,13 @@ from subprocess import Popen
 from time import gmtime
 from time import sleep
 from time import strftime
+from datetime import datetime
 
-
-nltk.data.path.append('/root/SHARED/nltk_data/')
-
-
+print(sys.version)
 
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
 
-langs = {
+lang_dict = {
     'ar': 'Arabic',
     'bg': 'Bulgarian',
     'ca': 'Catalan',
@@ -79,7 +79,7 @@ langs = {
     'zh_TW': 'Chinese (traditional)'
 }
 
-tweet_keys = [
+tweet_key_dict = [
     u'quote_count',
     u'contributors',
     u'truncated',
@@ -110,7 +110,7 @@ tweet_keys = [
     u'place'
 ]
 
-syntax_en = {
+syntax_en_dict = {
     'PRP$': 'pronoun, possessive',
     'VBG': 'verb, present participle or gerund',
     'VBD': 'verb, past tense',
@@ -147,7 +147,7 @@ syntax_en = {
     'UH': 'interjection'
 }
 
-syntax_en_clr = {
+syntax_en_clr_dict = {
     'NN': GREEN,
     'NNS': GREEN,
     'NNP': GREEN,
@@ -174,22 +174,36 @@ syntax_en_clr = {
     "IN": RED,
 }
 
-def set_nltk_data_path(nltk_d_path):
+def process_fh(fh):
+    try:
+        print(fh)
+        return True
+    except Exception as err:
+        print(err)
+        return False
+
+def set_nltk_data_path(nltk_d_path=None):
     if os.path.isfile(nltk_d_path):
         nltk.data.path.append(nltk_d_path)
         return True
     else:
         return False
 
-def get_hostname():
-    return socket.gethostname()
-
-
-def getNetworkIp():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    s.connect(('<broadcast>', 0))
-    return s.getsockname()[0]
+def get_ip_and_port():
+    s = socket.socket(
+        family=socket.AF_INET,
+        type=socket.SOCK_DGRAM,
+        proto=0,
+        fileno=None)
+    s.setsockopt(
+        socket.SOL_SOCKET,
+        socket.SO_BROADCAST, 1)
+    s.connect(
+        ('<broadcast>', 0))
+    ip, port = s.getsockname()
+    s.shutdown(socket.SHUT_RDWR)
+    s.close()
+    return ip, port
 
 
 def get_track_words():
@@ -276,11 +290,9 @@ def report(jobs_done):
     server_address = ('192.168.1.103', 15000)
     message = log_file(jobs_done)
     try:
-        #print >>sys.stderr, 'sending "%s"' % message
         sock.connect(server_address)
         sock.sendall(message)
     except Exception as e:
-        print e
+        print(e)
     finally:
-        #print >>sys.stderr, 'closing socket'
         sock.close()
