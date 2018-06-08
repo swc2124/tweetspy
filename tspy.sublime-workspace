@@ -1,0 +1,701 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"fin",
+				"find_packages\tstatement"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "\"\"\"\n--------------------------\nThe Package Library Module\n--------------------------\n\nThe individual scripts in this package require many functions to perform their\ntasks.  Each script imports its functions from this library module.\n\nIn the future this single module could be broken into sub modules for sake of\norganization.\n\n\"\"\"\nfrom __future__ import absolute_import\nfrom __future__ import division\nfrom __future__ import print_function\n\nimport json\nimport sys\nimport nltk\nimport os\nimport psutil\nimport socket\nimport time\n\nfrom subprocess import PIPE\nfrom subprocess import Popen\nfrom time import gmtime\nfrom time import sleep\nfrom time import strftime\nfrom datetime import datetime\n\n\nBLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)\n\nlang_dict = {\n    'ar': 'Arabic',\n    'bg': 'Bulgarian',\n    'ca': 'Catalan',\n    'cs': 'Czech',\n    'da': 'Danish',\n    'de': 'German',\n    'el': 'Greek',\n    'en': 'English',\n    'es': 'Spanish',\n    'et': 'Estonian',\n    'fa': 'Persian',\n    'fi': 'Finnish',\n    'fr': 'French',\n    'hi': 'Hindi',\n    'hr': 'Croatian',\n    'hu': 'Hungarian',\n    'id': 'Indonesian',\n    'is': 'Icelandic',\n    'it': 'Italian',\n    'iw': 'Hebrew',\n    'ja': 'Japanese',\n    'ko': 'Korean',\n    'lt': 'Lithuanian',\n    'lv': 'Latvian',\n    'ms': 'Malay',\n    'nl': 'Dutch',\n    'no': 'Norwegian',\n    'pl': 'Polish',\n    'pt': 'Portuguese',\n    'ro': 'Romanian',\n    'ru': 'Russian',\n    'sk': 'Slovak',\n    'sl': 'Slovenian',\n    'sr': 'Serbian',\n    'sv': 'Swedish',\n    'th': 'Thai',\n    'tl': 'Filipino',\n    'tr': 'Turkish',\n    'uk': 'Ukrainian',\n    'ur': 'Urdu',\n    'vi': 'Vietnamese',\n    'zh_CN': 'Chinese (simplified)',\n    'zh_TW': 'Chinese (traditional)'\n}\n\ntweet_key_dict = [\n    u'quote_count',\n    u'contributors',\n    u'truncated',\n    u'text',\n    u'is_quote_status',\n    u'in_reply_to_status_id',\n    u'reply_count',\n    u'id',\n    u'favorite_count',\n    u'entities',\n    u'retweeted',\n    u'coordinates',\n    u'timestamp_ms',\n    u'source',\n    u'in_reply_to_screen_name',\n    u'id_str',\n    u'retweet_count',\n    u'in_reply_to_user_id',\n    u'favorited',\n    u'retweeted_status',\n    u'user',\n    u'geo',\n    u'in_reply_to_user_id_str',\n    u'lang',\n    u'created_at',\n    u'filter_level',\n    u'in_reply_to_status_id_str',\n    u'place'\n]\n\nsyntax_en_dict = {\n    'PRP$': 'pronoun, possessive',\n    'VBG': 'verb, present participle or gerund',\n    'VBD': 'verb, past tense',\n    'VBN': 'verb, past participle',\n    'VBP': 'verb, present tense not 3rd person singular',\n    'WDT': 'determiner, WH',\n    'JJ': 'adjective or numeral, ordinal',\n    'WP': 'pronoun, WH',\n    'VBZ': 'verb, present tense 3rd person singular',\n    'DT': 'determiner',\n    'RP': 'particle',\n    'NN': 'noun, common, singular or mass',\n    'TO': '\"to\" as preposition or infinitive marker',\n    'PRP': 'pronoun, personal',\n    'RB': 'adverb',\n    'NNS': 'noun, common plural',\n    'NNP': 'noun, proper singular',\n    'VB': 'verb, base form',\n    'WRB': 'adverb, WH',\n    'CC': 'conjunction, coordinating',\n    'RBR': 'adverb, comparative',\n    'CD': 'cardinal numeral',\n    '-NONE-': 'No matching tags found',\n    'EX': 'existential, there there',\n    'IN': 'conjunction or subordinating preposition',\n    'WP$': 'pronoun, possessive WH',\n    'MD': 'modal auxiliary',\n    'JJS': 'adjective, superlative',\n    'JJR': 'adjective, comparative',\n    'PDT': 'pre-determiner',\n    'RBS': 'adverb, superlative',\n    'FW': 'foreign word',\n    'NNPS': 'noun, proper plural',\n    'UH': 'interjection'\n}\n\nsyntax_en_clr_dict = {\n    'NN': GREEN,\n    'NNS': GREEN,\n    'NNP': GREEN,\n    'NNPS': GREEN,\n    'MD': YELLOW,\n    'JJR': YELLOW,\n    'JJS': YELLOW,\n    'JJ': YELLOW,\n    'DT': YELLOW,\n    'VBG': BLUE,\n    'VBD': BLUE,\n    'VBN': BLUE,\n    'VBP': BLUE,\n    'VBZ': BLUE,\n    'VB': BLUE,\n    'RBS': MAGENTA,\n    'RBR': MAGENTA,\n    'RB': MAGENTA,\n    'WRB': MAGENTA,\n    'PRP$': CYAN,\n    'PRP': CYAN,\n    'WP': CYAN,\n    'WP$': CYAN,\n    \"IN\": RED,\n}\n\ndef\n\ndef set_nltk_data_path(nltk_d_path=None):\n    if os.path.isfile(nltk_d_path):\n        nltk.data.path.append(nltk_d_path)\n        return True\n    else:\n        return False\n\ndef get_hostname():\n    return socket.gethostname()\n\n\ndef getNetworkIp():\n    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)\n    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)\n    s.connect(('<broadcast>', 0))\n    return s.getsockname()[0]\n\n\ndef get_track_words():\n    pass\n\n\ndef ct(text, colour=WHITE):\n    seq = \"\\x1b[1;%dm\" % (30 + colour) + text + \"\\x1b[0m\"\n    return seq\n\n\ndef list_files(path):\n    # returns a list of names (with extension, without full path) of all files\n    # in folder path\n    files = []\n    for name in os.listdir(path):\n        if os.path.isfile(os.path.join(path, name)):\n            files.append(name)\n    return files\n\n\ndef getNetworkIp():\n    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)\n    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)\n    s.connect(('<broadcast>', 0))\n    return s.getsockname()[0]\n\n\ndef get_cpu_temperature():\n    try:\n        output, _error = Popen(\n            ['vcgencmd', 'measure_temp'], stdout=PIPE).communicate()\n        return float(output[output.index('=') + 1:output.rindex(\"'\")])\n    except:\n        try:\n            output, _error = Popen(['sensors'], stdout=PIPE).communicate()\n            temp = float(output.split(\"+\")[1].split(\" \")[0])\n            return temp\n        except OSError as e:\n            return \"0\"\n\ndef get_cpu_freq():\n    try:\n        output, _error = Popen(\n            ['vcgencmd', 'measure_clock arm'], stdout=PIPE).communicate()\n        return str(float(output[14:]) / 1e6)\n    except:\n        output, _error = Popen(\n            ['cat', '/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq'], stdout=PIPE).communicate()\n        return str(float(output[:6]) / 1e3)\n\ndef get_cpu_volts():\n    try:\n        output, _error = Popen(\n            ['vcgencmd', 'measure_volts core'], stdout=PIPE).communicate()\n        return str(output[5:11])\n    except:\n        return '1'\n\ndef net_traf():\n    try:\n        tot_after = psutil.net_io_counters()\n        return str(int(tot_after.bytes_sent/1e6)), str(int(tot_after.bytes_recv/1e6)).rstrip('\\n')\n    except:\n        return '0', '0'\n\ndef log_file(_jbsdn):\n    row = []\n    row.append(str(socket.gethostname()))\n    row.append(str(_jbsdn))\n    row.append(str(get_cpu_temperature()))\n    row.append(str(psutil.cpu_percent()))\n    row.append(get_cpu_freq())\n    row.append(get_cpu_volts())\n    row.append(str(psutil.virtual_memory().percent))\n    row.append(net_traf()[0])\n    row.append(net_traf()[1])\n    result = \" \".join(row)\n    return result\n\n\ndef report(jobs_done):\n    sock = socket.socket()\n    server_address = ('192.168.1.103', 15000)\n    message = log_file(jobs_done)\n    try:\n        #print >>sys.stderr, 'sending \"%s\"' % message\n        sock.connect(server_address)\n        sock.sendall(message)\n    except Exception as e:\n        print e\n    finally:\n        #print >>sys.stderr, 'closing socket'\n        sock.close()\n",
+			"file": "tweetspy/tweetspy_lib.py",
+			"file_size": 7311,
+			"file_write_time": 131727190970820691,
+			"settings":
+			{
+				"buffer_size": 7054,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "# Main (only) configuration file for tweetspy.\n# \n\n# =========================================================================== #\n# All PATH settings except the 'data_path' from the `nltk` section.  As of now,\n# `tweetspy` requires a shared file system.\n[PATH]\n\n# Directory to put newly streamed tweets into.  This is where `streamer.py`\n# will write new files.\nnew_tweets_dir=\n\n# Directory for the `cleaner` scripts to put their cleaned words into.  Each\n# `cleaner' script will write a file with the host-name as the filename.  The\n# 'parser' will then come and empty these files but leave the file in place\n# (maybe this is a place to change something).  \nclean_words_dir=\n\n# Directory for storing data tables in (maybe we don't need this yet).\ntable_path=\n\n# Directory for writing log files into.\nlog_dir=\n\n# =========================================================================== #\n#                                STREAMER\n# =========================================================================== #\n# Settings for the streamer.py script.\n[Streamer]\n\n# Authorization keys and tokens for accessing the twitter stream.\naccess_token=631011579-NzyCtmF6bvAawqQ25dPfNe4jy7q7hA8bdjn5tddO\naccess_token_secret=LFrAMsOwi0xouD3xCGK0xGemHhrKl9OiQLFLmWDRc4dzD\nconsumer_key=K9MLJepL4Ojk2gxzxbTYAwZVT\nconsumer_secret=ntj2kjxbZeiMGWdTRnPNqB72gwppRTH5y35zUGgUyDIsz6OkKd\n\n# The number of tweets to put in each file.\nn_tweets_per_file=500\n\n# The number of files to write to disc before checking in.\n# TODO : Explain checking in.\ncheck_in_interval=100\n\n# =========================================================================== #\n# Words to use as the track parameter when starting the stream.\n[Track_words]\nen_words=a, the, with, I, my, and, like\n\n# =========================================================================== #\n# Words for the `cleaner` scripts to look out for.\n[Buzz_words]\nen_buzz_words=\n\n# =========================================================================== #\n# \n[Udp_server]\nserver_address=\nserver_port=\nbuffer_size=\n\n# =========================================================================== #\n#\n[Udp_client]\nbuffer_size=\n\n# =========================================================================== #\n# Run time options.\n[Run_time]\n# \nverbose=True\n\n# =========================================================================== #\n# Additional directories where nltk data file are located.  If there are more\n# than one additional directory, then add each one as a separate value under\n# this section.  additional \n[nltk]\nadditional_data_dir_0=\nadditional_data_dir_1=\nadditional_data_dir_2=\nadditional_data_dir_3=\nadditional_data_dir_4=",
+			"file": "tweetspy/tweetspy.ini",
+			"file_size": 639,
+			"file_write_time": 131727154398151081,
+			"settings":
+			{
+				"buffer_size": 2667,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/swc21/Documents/GitHub/spinbin/spin.sublime-project",
+			"settings":
+			{
+				"buffer_size": 615,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/C/Users/swc21/Documents/GitHub/skysurvey/README.md",
+			"settings":
+			{
+				"buffer_size": 8848,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "\"\"\"[summary]\n\n[description]\n\"\"\"\nfrom tweepy import StreamListener\n\nfrom .tweetspy_lib import PATH_NEW_TWEETS\nfrom .tweetspy_lib import\nfrom .tweetspy_lib import\nfrom .tweetspy_lib import\nfrom .tweetspy_lib import\nfrom .tweetspy_lib import\nfrom .tweetspy_lib import\nfrom .tweetspy_lib import\n\nclass SListener(StreamListener):\n\n    def __init__(self, api):\n        self.buffer_size = int(3 * 1e6)\n        self.api = api\n        self.counter = 0\n        self.fprefix = PATH_NEW_TWEETS\n        fh0 = datetime.now().strftime(\"%Y%b%a%d-%H_%M_%S_%f\") + '.json'\n        self.output = open(self.fprefix + ,\n                                  mode='w',\n                                  buffering=self.buffer_size)\n        self.delout = open('delete.txt', 'a')\n        self.languages = []\n\n    def on_data(self, data):\n\n        raw_tweet = json.loads(data)\n\n        if 'delete' in raw_tweet.keys():\n            delete = raw_tweet['delete']['status']\n            if self.on_delete(delete['id'], delete['user_id']) is False:\n                return False\n\n        elif 'limit' in raw_tweet.keys():\n            if self.on_limit(raw_tweet['limit']['track']) is False:\n                return False\n\n        elif 'warning' in raw_tweet.keys():\n            warning = raw_tweet['warnings']\n            print ct(\"[ \", YELLOW) + ct(warning['message'], RED) + ct(\" ]\", Yellow)\n            return False\n\n        elif 'text' in raw_tweet.keys():\n            _space = 20 - len(raw_tweet['user']['screen_name'])\n            _counter = ct('[ ', GREEN) + str(self.counter) + ct(' ]', GREEN)\n            _time = ct('[ ', GREEN) + ct(raw_tweet['created_at'].split(' ')[3].encode(\"utf-8\", 'replace'), WHITE) + ct(' ]', GREEN)\n            _user = ct(raw_tweet['user']['screen_name'].encode(\"utf-8\", 'replace'), MAGENTA)\n            if raw_tweet['lang'] in langs.keys():\n                \n                _lang = ct('[ ', GREEN) + ct(langs[raw_tweet[\"lang\"]], YELLOW) + ct(' ]', GREEN)\n            else:\n                _lang = ct('[ ', YELLOW) + ct(\"UNKNOWN\", RED) + ct(' ]', YELLOW)\n            \n            _text = ct(raw_tweet['text'].encode(\"utf-8\", 'replace'), CYAN)\n            _message = _counter + \"\\t\" + _time + \" \" + _lang + \"\\t\" + ct(' @ ', BLUE) + _user + \" \" * _space + \" : \" + _text\n            print _message.replace(\"\\n\", \"\")\n            self.output.write(data + '\\n')\n\n        self.counter += 1\n        if self.counter >= 300:\n            # sys.exit()\n            self.output.close()\n            self.output = codecs.open(self.fprefix + datetime.now().strftime(\"%Y%b%a%d-%H_%M_%S_%f\") + '.json',\n                                      mode='w',\n                                      buffering=self.buffer_size)\n            oldcounter = self.counter\n            self.counter = 0\n\n            os.system('cat ~/SHARED/filesaved.txt')\n            sys.stderr.write('\\n     ----------------------------\\n')\n            sys.stderr.write(' --> [RESET COUNTER] : From [' +\n                             str(oldcounter) + '] To [' + str(self.counter) + ']\\n')\n            sys.stderr.write(' --> [SAVED FILE]\\n')\n            sys.stderr.write(' --> [NEW FILE] : ' + self.fprefix +\n                             datetime.now().strftime(\"%Y%b%a%d-%H_%M_%S_%f\") + '.json\\n')\n            \n\n            with open(\"/root/SHARED/tweetspy/kill.txt\", \"r\") as ktxt:\n                f = ktxt.readlines()\n                if f[0] == '0\\n':\n                    if raw_input(\"\\n --> Do you want to kill? yes/[no] :\" in [\"Y\", \"y\", \"YES\", \"Yes\", \"yes\"]):\n                        sys.stderr.write(\" --> KILLED\\n\")\n                        sys.stderr.write('     ----------------------------\\n')\n                        sys.exit(0)\n                    else:\n                        sys.stderr.write(\" --> NOT KILLED\\n\")\n\n            sys.stderr.write('     ----------------------------\\n')\n        return\n\n    def on_delete(self, status_id, user_id):\n        del_msg = ct(\"[ \", YELLOW) + ct(\"DELETE \" + str(status_id), RED) + ct(\" ]\", YELLOW)\n        _counter = ct('[ ', GREEN) + str(self.counter) + ct(' ]', GREEN)\n        # _time = ct('[', GREEN) + ct(raw_tweet['created_at'].split(' ')[3].encode(\"utf-8\", 'replace'), WHITE) + ct(']  ', GREEN)\n        print _counter + \"\\t\" + del_msg\n        self.delout.write(str(status_id) + \"\\n\")\n        return\n\n    def on_limit(self, track):\n        lim_msg = ct(\"[ \", YELLOW) + ct(\"LIMIT \" + str(track), RED) + ct(\" ]\", YELLOW)\n        _counter = ct('[ ', GREEN) + str(self.counter) + ct(' ]', GREEN)\n        # _time = ct('[', GREEN) + ct(raw_tweet['created_at'].split(' ')[3].encode(\"utf-8\", 'replace'), WHITE) + ct(']  ', GREEN)\n        print _counter + \"\\t\" + lim_msg\n        return\n\n    def on_error(self, status_code):\n        sys.stderr.write('Error: ' + str(status_code) + \"\\n\")\n        return False\n\n    def on_timeout(self):\n        sys.stderr.write(\"Timeout, sleeping for 60 seconds...\\n\")\n        time.sleep(60)\n\n        return\n",
+			"file": "tweetspy/slistener.py",
+			"file_size": 6345,
+			"file_write_time": 131681928827549560,
+			"settings":
+			{
+				"buffer_size": 4927,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/C/Users/swc21/Documents/GitHub/interview/test_linked_list.py",
+			"settings":
+			{
+				"buffer_size": 510,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 619.0,
+		"last_filter": "inst",
+		"selected_items":
+		[
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"del",
+				"Delete Blank Lines"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"packa",
+				"Install Package Control"
+			]
+		],
+		"width": 966.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/Users/swc21/Documents/GitHub",
+		"/C/Users/swc21/Documents/GitHub/skysurvey",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/tweetspy"
+	],
+	"file_history":
+	[
+		"/C/Users/swc21/Documents/GitHub/python_classifiers.txt",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/setup.py",
+		"/C/Users/swc21/Documents/GitHub/skysurvey/setup.py",
+		"/C/Users/swc21/Documents/GitHub/interview/linked_list.py",
+		"/C/Users/swc21/Documents/GitHub/interview/README.md",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/tweetspy/streamer.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/tweetspy/tweetspy.ini",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/tweetspy/parser.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/tweetspy/fileserver.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/tweetspy/udp_server.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/README.md",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/tweetspy/tweetspy_lib.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/README.html",
+		"/C/Users/swc21/Documents/GitHub/skysearcher/README.md",
+		"/C/Users/swc21/Documents/GitHub/ImagePop/README.md",
+		"/C/Users/swc21/Documents/GitHub/spinbin/README.md",
+		"/C/Users/swc21/Documents/GitHub/spinbin/spin.sublime-project",
+		"/C/Users/swc21/Documents/GitHub/spinbin/spinbin/__init__.py",
+		"/C/Users/swc21/Documents/GitHub/spinbin/spinbin/core/__init__.py",
+		"/C/Users/swc21/Documents/GitHub/spinbin/spinbin/gridbin/__init__.py",
+		"/C/Users/swc21/Documents/GitHub/spinbin/spinbin/gridbin/bin_data.py",
+		"/C/Users/swc21/Documents/GitHub/spinbin/setup.py",
+		"/C/Users/swc21/Documents/GitHub/main.sublime-project",
+		"/C/Users/swc21/Documents/GitHub/starcat/starcat/__init__.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/twitterlistener.sublime-project",
+		"/C/Users/swc21/Documents/GitHub/starcat/starcat/starcat_lib.py",
+		"/C/Users/swc21/Documents/GitHub/starcat/starcat/starcat_terminal.py",
+		"/C/Users/swc21/Documents/GitHub/starcat/starcat/starcat_gui.py",
+		"/C/Users/swc21/Documents/GitHub/templates/headers/Python.tmpl",
+		"/C/Users/swc21/Documents/GitHub/ImagePop/ImagePop.sublime-project",
+		"/C/Users/swc21/Documents/GitHub/templates/headers/header.tmpl",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/UDP_Client.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/Twitter_Text_Parser.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/Twitter_Text_Cleaner.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/Twitter_Ripper.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/Twitter_Controller.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/test.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/StreamerV2.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/slistener_v2.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/slistener.py",
+		"/C/Users/swc21/Documents/GitHub/twitterlistener/Client_test.py",
+		"/C/Users/swc21/Documents/GitHub/nbodyparallel/nbodyparallel.sublime-project",
+		"/C/Users/swc21/AppData/Roaming/Sublime Text 3/Packages/AutoPEP8/AutoPep8.sublime-settings",
+		"/C/Users/swc21/Documents/GitHub/solersystem/Solersystem.py",
+		"/C/Users/swc21/Documents/GitHub/solersystem/SOLS-nbody.py",
+		"/C/Users/swc21/Documents/GitHub/starcat/starcat/gui_plotlib.py",
+		"/C/Users/swc21/Documents/GitHub/starcat/starcat/make_mix.py",
+		"/C/Users/swc21/Documents/GitHub/starcat/starcat/wingtips.py",
+		"/C/Users/swc21/Documents/GitHub/starcat/setup.py",
+		"/C/Users/swc21/Documents/GitHub/ImagePop/ImagePop.py",
+		"/C/Users/swc21/Documents/GitHub/ImagePop/ImagePopLib.py",
+		"/C/Users/swc21/Documents/GitHub/ImagePop/png.py",
+		"/C/Users/swc21/Documents/GitHub/ImagePop/starfind.py",
+		"/C/Users/swc21/Documents/GitHub/nbodyparallel/mpinbd.py",
+		"/C/Users/swc21/Documents/GitHub/nbodyparallel/mpinbd_lib.py",
+		"/C/Users/swc21/Documents/GitHub/nbodyparallel/SOLS-nbody.py",
+		"/C/Users/swc21/Documents/GitHub/oldplottingtools/plot.py",
+		"/C/Users/swc21/Documents/GitHub/oldplottingtools/plot2.py",
+		"/C/Users/swc21/Documents/GitHub/oldplottingtools/sat_auto_save_3x3.py",
+		"/C/Users/swc21/Documents/GitHub/oldplottingtools/sat_comp.py",
+		"/C/Users/swc21/Documents/GitHub/oldplottingtools/sat_comp_single_3x3.py",
+		"/C/Users/swc21/Documents/GitHub/oldplottingtools/sat_save.py",
+		"/C/Users/swc21/Documents/GitHub/parallelmodelfitting/evenbetterfit.py",
+		"/C/Users/swc21/AppData/Roaming/Sublime Text 3/Settings/SideBarEnhancements.json",
+		"/C/Users/swc21/Documents/GitHub/ParallelMonteCarlo/dist_bsize_cluster.py",
+		"/C/Users/swc21/Documents/GitHub/ParallelMonteCarlo/carlos_parallel2.py",
+		"/C/Users/swc21/Documents/GitHub/ParallelMonteCarlo/distanceByboxsize.py",
+		"/C/Users/swc21/Documents/GitHub/ParallelMonteCarlo/parallel_IO_test.py",
+		"/C/Users/swc21/Documents/GitHub/RaspberryPiLog/log.py",
+		"/C/Users/swc21/Documents/GitHub/RaspberryPiLog/shutdown.py",
+		"/C/Users/swc21/Documents/GitHub/RaspberryPiLog/Status_Update.py",
+		"/C/Users/swc21/Documents/GitHub/RaspberryPiLog/UDP_Client.py",
+		"/C/Users/swc21/Documents/GitHub/RaspberryPiLog/UDP_Server.py",
+		"/E/ClusterFiles/parallel_IO_test.py",
+		"/E/ClusterFiles/distanceByboxsize.py",
+		"/E/ClusterFiles/carlos_parallel2.py",
+		"/E/ClusterFiles/gxutil.py",
+		"/E/ClusterFiles/Old_Unsorted/Status_Update.py",
+		"/E/ClusterFiles/bestfit/bestfit.py",
+		"/E/ClusterFiles/Old_Unsorted/parallel_IO_test.py",
+		"/E/ClusterFiles/Old_Unsorted/carlos_parallel2.py",
+		"/E/ClusterFiles/Old_Unsorted/plot2.py",
+		"/E/ClusterFiles/Old_Unsorted/plot.py",
+		"/E/ClusterFiles/Old_Unsorted/log.py",
+		"/E/ClusterFiles/Old_Unsorted/mpi_nbody.py",
+		"/E/ClusterFiles/Old_Unsorted/Solersystem2.py",
+		"/E/ClusterFiles/Old_Unsorted/SOLS-nbody.py",
+		"/E/ClusterFiles/dist_bsize_cluster.py",
+		"/E/ClusterFiles/Old_Unsorted/scrap.py",
+		"/E/ClusterFiles/Lowell/mpi4py_nbody.py",
+		"/E/ClusterFiles/bestfit/evenbetterfit.py",
+		"/E/ClusterFiles/bestfit/betterfit.py",
+		"/E/ClusterFiles/Old_Unsorted/Listing2.sh",
+		"/E/ClusterFiles/twitterlistener/StreamerV2.py",
+		"/E/ClusterFiles/twitterlistener/test.py",
+		"/E/ClusterFiles/twitterlistener/Twitter_Controller.py",
+		"/E/ClusterFiles/twitterlistener/Twitter_Text_Cleaner.py",
+		"/E/ClusterFiles/twitterlistener/Twitter_Text_Parser.py",
+		"/C/Users/swc21/AppData/Roaming/Sublime Text 3/Packages/User/AutoPep8.sublime-settings",
+		"/E/ClusterFiles/twitterlistener/UDP_Client.py",
+		"/E/ClusterFiles/twitterlistener/slistener.py",
+		"/E/ClusterFiles/twitterlistener/slistener_v2.py",
+		"/E/ClusterFiles/Old_Unsorted/mpi_nbody_newest.py",
+		"/E/ClusterFiles/Tweet_Code/Twitter_Text_Parser.py",
+		"/E/ClusterFiles/.csshrc",
+		"/C/Users/swc21/AppData/Roaming/Sublime Text 3/Packages/User/FileHeader.sublime-settings",
+		"/C/Users/swc21/AppData/Roaming/Sublime Text 3/Packages/FileHeader/FileHeader.sublime-settings",
+		"/C/Users/swc21/AppData/Roaming/Sublime Text 3/Packages/FileHeader/Default (Windows).sublime-keymap",
+		"/E/ClusterFiles/Old_Unsorted/test.py",
+		"/C/Users/swc21/AppData/Roaming/Sublime Text 3/Packages/AutoPEP8/Default.sublime-keymap",
+		"/E/ClusterFiles/UDP_Client.py",
+		"/E/ClusterFiles/sat_save.py",
+		"/E/ClusterFiles/sat_comp_single_3x3.py",
+		"/E/ClusterFiles/sat_comp.py",
+		"/E/ClusterFiles/UDP_Server.py",
+		"/E/ClusterFiles/Tweet_Code/Twitter_Controller.py",
+		"/E/ClusterFiles/shutdown.py",
+		"/E/ClusterFiles/Solersystem.py",
+		"/E/ClusterFiles/version2/mpinbd.py",
+		"/E/ClusterFiles/Tweet_Code/UDP_Client.py",
+		"/E/ClusterFiles/Tweet_Code/Twitter_Text_Cleaner.py",
+		"/E/ClusterFiles/Tweet_Code/Twitter_Streamer_V2.py",
+		"/E/ClusterFiles/Tweet_Code/Twitter_Streamer.py",
+		"/E/ClusterFiles/Tweet_Code/Twitter_Ripper.py",
+		"/E/ClusterFiles/version2/mpinbd_lib.py",
+		"/E/ClusterFiles/Tweet_Code/test.py",
+		"/E/ClusterFiles/Tweet_Code/slistener_v2.py",
+		"/E/ClusterFiles/Tweet_Code/slistener.py"
+	],
+	"find":
+	{
+		"height": 29.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"count",
+			"getNext()",
+			"found",
+			"previous",
+			"object",
+			"str",
+			"object",
+			"str",
+			"Report",
+			"Log_File",
+			"Network_Traf",
+			"names",
+			"dtypes",
+			"plt_clrs",
+			"Record_book_keys",
+			", ",
+			"','",
+			", ",
+			", u",
+			"= ",
+			"\"",
+			" =",
+			"``",
+			"# ",
+			"skysurvey",
+			"c_functions",
+			"tdtk"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "tweetspy/tweetspy_lib.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7054,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4413,
+								4213
+							]
+						],
+						"settings":
+						{
+							"auto_complete_triggers":
+							[
+								{
+									"characters": "<",
+									"selector": "text.html"
+								},
+								{
+									"characters": ".#",
+									"selector": "text.html"
+								}
+							],
+							"markdonw_live_preview_last_run": 1528321176.2,
+							"show_definitions": false,
+							"syntax": "Packages/Python 3/Python3.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 1,
+					"file": "tweetspy/tweetspy.ini",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2667,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								925,
+								925
+							]
+						],
+						"settings":
+						{
+							"auto_complete_triggers":
+							[
+								{
+									"characters": "<",
+									"selector": "text.html"
+								},
+								{
+									"characters": ".#",
+									"selector": "text.html"
+								}
+							],
+							"markdonw_live_preview_last_run": 1528320508.47,
+							"syntax": "Packages/Git Formats/Git Config.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/C/Users/swc21/Documents/GitHub/spinbin/spin.sublime-project",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 615,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								102,
+								104
+							]
+						],
+						"settings":
+						{
+							"SL.70.region_keys":
+							[
+							],
+							"auto_complete_triggers":
+							[
+								{
+									"characters": "<",
+									"selector": "text.html"
+								},
+								{
+									"characters": ".#",
+									"selector": "text.html"
+								}
+							],
+							"markdonw_live_preview_last_run": 1528461787.39,
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/C/Users/swc21/Documents/GitHub/skysurvey/README.md",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 8848,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"auto_complete_triggers":
+							[
+								{
+									"characters": "<",
+									"selector": "text.html"
+								},
+								{
+									"characters": ".#",
+									"selector": "text.html"
+								}
+							],
+							"markdonw_live_preview_last_run": 1528461758.25,
+							"syntax": "Packages/MarkdownEditing/Markdown.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "tweetspy/slistener.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4927,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								66,
+								66
+							]
+						],
+						"settings":
+						{
+							"SL.62.region_keys":
+							[
+							],
+							"auto_complete_triggers":
+							[
+								{
+									"characters": "<",
+									"selector": "text.html"
+								},
+								{
+									"characters": ".#",
+									"selector": "text.html"
+								}
+							],
+							"markdonw_live_preview_last_run": 1528320892.82,
+							"show_definitions": false,
+							"syntax": "Packages/Python 3/Python3.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "/C/Users/swc21/Documents/GitHub/interview/test_linked_list.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 510,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								510,
+								510
+							]
+						],
+						"settings":
+						{
+							"auto_complete_triggers":
+							[
+								{
+									"characters": "<",
+									"selector": "text.html"
+								},
+								{
+									"characters": ".#",
+									"selector": "text.html"
+								}
+							],
+							"markdonw_live_preview_last_run": 1528245624.5,
+							"show_definitions": false,
+							"syntax": "Packages/Python 3/Python3.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 29.0
+	},
+	"input":
+	{
+		"height": 110.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			0.330182283478,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.CSS Extended Completions":
+	{
+		"height": 0.0
+	},
+	"output.SublimeLinter":
+	{
+		"height": 0.0
+	},
+	"output.autopep8":
+	{
+		"height": 227.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.markdown":
+	{
+		"height": 126.0
+	},
+	"output.mdpopups":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "tspy.sublime-project",
+	"replace":
+	{
+		"height": 54.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 1,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 498.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

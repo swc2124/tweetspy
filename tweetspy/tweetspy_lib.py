@@ -1,6 +1,14 @@
-""""
+"""
+--------------------------
+The Package Library Module
+--------------------------
 
-[description]
+The individual scripts in this package require many functions to perform their
+tasks.  Each script imports its functions from this library module.
+
+In the future this single module could be broken into sub modules for sake of
+organization.
+
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -21,7 +29,7 @@ from time import strftime
 
 nltk.data.path.append('/root/SHARED/nltk_data/')
 
-hostname = socket.gethostname()
+
 
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
 
@@ -166,6 +174,17 @@ syntax_en_clr = {
     "IN": RED,
 }
 
+def set_nltk_data_path(nltk_d_path):
+    if os.path.isfile(nltk_d_path):
+        nltk.data.path.append(nltk_d_path)
+        return True
+    else:
+        return False
+
+def get_hostname():
+    return socket.gethostname()
+
+
 def getNetworkIp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -192,16 +211,11 @@ def list_files(path):
     return files
 
 
-def bytes2human(n):
-    symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
-    prefix = {}
-    for i, s in enumerate(symbols):
-        prefix[s] = 1 << (i + 1) * 10
-    for s in reversed(symbols):
-        if n >= prefix[s]:
-            value = float(n) / prefix[s]
-            return '%.2f %s' % (value, s)
-    return '%.2f B' % (n)
+def getNetworkIp():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    s.connect(('<broadcast>', 0))
+    return s.getsockname()[0]
 
 
 def get_cpu_temperature():
@@ -217,7 +231,6 @@ def get_cpu_temperature():
         except OSError as e:
             return "0"
 
-
 def get_cpu_freq():
     try:
         output, _error = Popen(
@@ -228,7 +241,6 @@ def get_cpu_freq():
             ['cat', '/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq'], stdout=PIPE).communicate()
         return str(float(output[:6]) / 1e3)
 
-
 def get_cpu_volts():
     try:
         output, _error = Popen(
@@ -237,29 +249,26 @@ def get_cpu_volts():
     except:
         return '1'
 
-
 def net_traf():
-    interval = 0.005
     try:
-        # tot_before = psutil.net_io_counters()
-        # pnic_before = psutil.net_io_counters(pernic=True)
-        time.sleep(interval)
         tot_after = psutil.net_io_counters()
-        # pnic_after = psutil.net_io_counters(pernic=True)
         return str(int(tot_after.bytes_sent/1e6)), str(int(tot_after.bytes_recv/1e6)).rstrip('\n')
     except:
         return '0', '0'
 
-
 def log_file(_jbsdn):
-    cpu_temp = str(get_cpu_temperature())
-    cpu_usage = str(psutil.cpu_percent())
-    cpu_freq = get_cpu_freq()
-    core_volts = get_cpu_volts()
-    free_ram = str(psutil.virtual_memory().percent)
-    sent, recv = net_traf()
-    hostname = str(socket.gethostname())
-    return str(hostname + ' ' + str(_jbsdn) + ' ' + cpu_temp + ' ' + cpu_usage + ' ' + cpu_freq + ' ' + core_volts + ' ' + free_ram + ' ' + sent + ' ' + recv)
+    row = []
+    row.append(str(socket.gethostname()))
+    row.append(str(_jbsdn))
+    row.append(str(get_cpu_temperature()))
+    row.append(str(psutil.cpu_percent()))
+    row.append(get_cpu_freq())
+    row.append(get_cpu_volts())
+    row.append(str(psutil.virtual_memory().percent))
+    row.append(net_traf()[0])
+    row.append(net_traf()[1])
+    result = " ".join(row)
+    return result
 
 
 def report(jobs_done):
