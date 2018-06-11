@@ -1,95 +1,44 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-# SOl Courtney Columbia U Department of Astronomy and Astrophysics NYC 2016
-# swc2124@columbia.edu
 
+""""
+[description]
+
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from configparser import ConfigParser as cpar
 
-#--[DESCRIPTION]-------------------------------------------------------------#
-
-'''
-Date: May 2016
-
-Handler for twitter stream
-'''
-
-#--[IMPORTS]-----------------------------------------------------------------#
-
-import json
-import os
-import sys
-
-from time import gmtime
-from time import sleep
-from time import strftime
-from tweepy import API
 from tweepy import OAuthHandler
 from tweepy import Stream
-from tweepy import Stream
-from tweepy import StreamListener
 
-from time import gmtime
-from time import sleep
-from time import strftime
+from pymongo import MongoClient
 
-import os, tweepy
-
-import codecs
-
-from kitchen.text.converters import getwriter
+from slistener import TweetspyStreamListener as TSL
 
 
-from slistener import SListener
 
-#--[PROGRAM-OPTIONS]---------------------------------------------------------#
+if __name__ == '__main__':
 
-UTF8Writer = getwriter('utf8')
-sys.stdout = UTF8Writer(sys.stdout)
+    config = cpar()
+    config.read("tweetspy.ini")
 
-ru_words = ["Лидочка", "солнечно", "Оди", "мой", "я", "с", "в", "Кот", "собака"]
+    con_key = config.get("streamer", "consumer_key")
+    con_sec = config.get("streamer", "consumer_secret")
+    acc_tok = config.get("streamer", "access_token")
+    acc_sec = config.get("streamer", "access_token_secret")
 
-name_words = [ "odie", "Lidochka", "sonny", "leeland"]
+    auth = OAuthHandler(con_key, con_sec)
+    auth.set_access_token(acc_tok, acc_sec)
 
-en_words = ["a", "the", "with", "I", "my", "and", "I", "like", " "]
+    mongodb_host = config.get("streamer", "mongodb_host")
+    mongodb_port = config.getint("streamer", "mongodb_port")
+    client = MongoClient(host=mongodb_host, port=mongodb_port)
+    db = client["twitter"]
 
-all_lists = [ru_words, name_words, en_words]
+    stream = Stream(auth, TSL(config, db))
 
-Track = []
-for wrd_list in all_lists:
-    for _wrd in wrd_list:
-        Track.append(_wrd.decode("utf-8"))
-
-
-access_token = "631011579-NzyCtmF6bvAawqQ25dPfNe4jy7q7hA8bdjn5tddO"
-access_token_secret = "LFrAMsOwi0xouD3xCGK0xGemHhrKl9OiQLFLmWDRc4dzD"
-consumer_key = "K9MLJepL4Ojk2gxzxbTYAwZVT"
-consumer_secret = "ntj2kjxbZeiMGWdTRnPNqB72gwppRTH5y35zUGgUyDIsz6OkKd"
-
-print('\n-------------------------------------------------------------------')
-print('setting up stream feed\t:\t' + strftime("%Y_%m_%d_%H_%M_%S", gmtime()))
-print('access_token\t\t\t:\t' + access_token)
-print('access_token_secret\t:\t' + access_token_secret)
-print('consumer_key\t\t:\t' + consumer_key)
-print('consumer_secret\t:\t' + consumer_secret)
-print('-------------------------------------------------------------------\n')
-print('attempting to start stream..')
-
-auth = OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-api = API(auth)
-l = SListener(api=api)
-
-try:
-
-    os.system('clear')
-    print('starting now')
-    Stream(auth, l).filter(track=Track, async=True)
-
-except KeyboardInterrupt, e:
-
-    Stream.disconnect()
-    print('stream dissonected')
-    raise
+    try:
+        stream.filter(track=["a","i","#"], async=True)
+    except Exception as err:
+        print(err)
