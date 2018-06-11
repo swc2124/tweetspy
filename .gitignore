@@ -1,5 +1,5 @@
 # My ini file
-*.ini
+*/*.ini
 
 # Sublime Text projects
 *.sublime-project
