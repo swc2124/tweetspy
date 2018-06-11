@@ -3,101 +3,149 @@
 [description]
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
-import os
-import sys
-import json
-from datetime import datetime
-import tweepy
-from colorama import init
+from tweepy import StreamListener
 
-init()
+from tweepy.models import Status
 
-BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
+from tweepy.utils import import_simplejson
 
-def ct(text, colour=WHITE):
-    seq = "\x1b[1;%dm" % (30 + colour) + text + "\x1b[0m"
-    return seq
+from tweetspy_lib import *
 
-def tstamp():
-    return str(datetime.now().timestamp()).replace(".", "_")
+json = import_simplejson()
 
-def filehandle(pth, ext="JSON"):
-    return os.path.join(pth, tstamp() + ext)
 
-keep_columns = [
-    'created_at', 'description', 'followers_count',
-    'friends_count', 'geo_enabled', 'id', 'id_str',
-    'lang', 'location', 'name', 'profile_image_url',
-    'profile_image_url_https', 'protected',
-    'screen_name', 'statuses_count', 'time_zone',
-    'url', 'verified']
+class TweetspyStreamListener(StreamListener):
 
-def prep_tweet(tweet, keep_cols=keep_columns):
-    user_data = {}
-    text = tweet["text"]
-    for key in list(tweet["user"].keys()):
-        if key in keep_cols:
-            user_data[key] = tweet["user"][key]
-            # print(key, ":", tweet["user"][key])
-    return text, user_data
-
-class TweetspyStreamListener(tweepy.StreamListener):
-
-    def __init__(self, cfg, db):
+    def __init__(self):
         super(TweetspyStreamListener, self).__init__()
-        self.count_good = 0
-        self.count_bad = 0
-        self.save_dir =  cfg.get("path", "new_tweets_dir")
-        self.ext = os.path.extsep + 'JSON'
-        self.db = db
+        self.count = 0
 
-    def on_data(self, data):
-        spaces = 25
-        tweet = json.loads(data)
+    def on_connect(self):
+        """Called once connected to streaming server.
 
-        if not "user" in list(tweet.keys()):
-            return True
+        This will be invoked once a successful response
+        is received from the server. Allows the listener
+        to perform some work prior to entering the read loop.
+        """
+        logging.info(tstamp() + "<TweetspyStreamListener connected>")
 
-        screen_name = tweet["user"]["screen_name"]
-        location = tweet["user"]["location"]
-        
-        user_tag = {"screen_name": screen_name}
-        if not self.db.people.find_one(user_tag):
-            try:
-                self.db.people.insert_one(user_tag)
-            except Exception as err:
-                print(err)
+    def on_data(self, raw_data):
+        """Called when raw data is received from connection.
+
+        Override this method if you wish to manually handle
+        the stream data. Return False to stop stream and close connection.
+        """
+        data = json.loads(raw_data)
+
+        if 'in_reply_to_status_id' in data:
+            status = Status.parse(self.api, data)
+            if self.on_status(status) is False:
+                return False
+
+        elif 'delete' in data:
+            delete = data['delete']['status']
+            if self.on_delete(delete['id'], delete['user_id']) is False:
+                return False
+
+        elif 'event' in data:
+            status = Status.parse(self.api, data)
+            if self.on_event(status) is False:
+                return False
+
+        elif 'direct_message' in data:
+            status = Status.parse(self.api, data)
+            if self.on_direct_message(status) is False:
+                return False
+
+        elif 'friends' in data:
+            if self.on_friends(data['friends']) is False:
+                return False
+
+        elif 'limit' in data:
+            if self.on_limit(data['limit']['track']) is False:
+                return False
+
+        elif 'disconnect' in data:
+            if self.on_disconnect(data['disconnect']) is False:
+                return False
+
+        elif 'warning' in data:
+            if self.on_warning(data['warning']) is False:
+                return False
+
+        else:
+            logging.error("Unknown message type: " + str(raw_data))
+
+        if "user" in list(data.keys()):
+            print(data["user"]["screen_name"])
+
+        self.count += 1
+        if self.count > check_in_interval:
+            logging.info(tstamp() + "<TweetspyStreamListener disconnected>")
+
+            config.read(config.get('path', 'config_file'))
+            if not config.getboolean('runtime', 'run'):
+                print("killing stream")
+                return False
             else:
-                name_clr = RED
-        else:
-            name_clr = CYAN
-        try:
-            self.db[screen_name].insert_one(tweet)
-        except Exception as err:
-            print(err)
-        if not location:
-            loc_clr = YELLOW
-        else:
-            loc_clr = GREEN
-        spc = " " * (spaces - len(screen_name))
-        msg = "\n" + ct(screen_name, name_clr) + spc + ct(str(location), loc_clr)
-        sys.stdout.write(msg)
-        sys.stdout.flush()
-        if self.count_good > 1e5:
-            return False
-        self.count_good += 1
-        return True
+                print("resetting count.")
+                self.count = 0
 
-    def on_error(self, status):
-        self.count_bad += 1
-        print("Error:", status)
-        return True
+    def keep_alive(self):
+        """Called when a keep-alive arrived."""
+        return
+
+    def on_status(self, status):
+        """Called when a new status arrives."""
+        return
 
     def on_exception(self, exception):
-        print(exception)
-        return True
+        """Called when an un-handled exception occurs."""
+        return
 
+    def on_delete(self, status_id, user_id):
+        """Called when a delete notice arrives for a status."""
+        return
 
+    def on_event(self, status):
+        """Called when a new event arrives."""
+        return
 
+    def on_direct_message(self, status):
+        """Called when a new direct message arrives."""
+        return
 
+    def on_friends(self, friends):
+        """Called when a friends list arrives.
+
+        friends is a list that contains user_id
+        """
+        return
+
+    def on_limit(self, track):
+        """Called when a limitation notice arrives."""
+        return
+
+    def on_error(self, status_code):
+        """Called when a non-200 status code is returned."""
+        return
+
+    def on_timeout(self):
+        """Called when stream connection times out."""
+        return
+
+    def on_disconnect(self, notice):
+        """Called when twitter sends a disconnect notice.
+
+        Disconnect codes are listed here:
+        https://dev.twitter.com/docs/streaming-apis/messages#Disconnect_messages_disconnect
+        """
+        return
+
+    def on_warning(self, notice):
+        """Called when a disconnection warning message arrives."""
+        return

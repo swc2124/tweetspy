@@ -3,42 +3,33 @@
 [description]
 
 """
-from __future__ import absolute_import
-from __future__ import division
 from __future__ import print_function
-
-from configparser import ConfigParser as cpar
 
 from tweepy import OAuthHandler
 from tweepy import Stream
 
-from pymongo import MongoClient
-
 from slistener import TweetspyStreamListener as TSL
 
-
+from tweetspy_lib import get_auth
+from tweetspy_lib import logging
+from tweetspy_lib import tstamp
 
 if __name__ == '__main__':
 
-    config = cpar()
-    config.read("tweetspy.ini")
+    # Get all 4 authorization values from helper library function.
+    con_key, con_sec, acc_tok, acc_sec = get_auth()
 
-    con_key = config.get("streamer", "consumer_key")
-    con_sec = config.get("streamer", "consumer_secret")
-    acc_tok = config.get("streamer", "access_token")
-    acc_sec = config.get("streamer", "access_token_secret")
-
+    # Set the authorization handler.
     auth = OAuthHandler(con_key, con_sec)
+
+    # Set access token and secret.
     auth.set_access_token(acc_tok, acc_sec)
 
-    mongodb_host = config.get("streamer", "mongodb_host")
-    mongodb_port = config.getint("streamer", "mongodb_port")
-    client = MongoClient(host=mongodb_host, port=mongodb_port)
-    db = client["twitter"]
+    # Initialize the stream object.
+    stream = Stream(auth, TSL())
 
-    stream = Stream(auth, TSL(config, db))
+    # Begin the filtered stream
+    stream.filter(track=["a", "i", "#"], async=True)
 
-    try:
-        stream.filter(track=["a","i","#"], async=True)
-    except Exception as err:
-        print(err)
+    # Log completion.
+    logging.info(tstamp() + "<END - streamer.py> ")
