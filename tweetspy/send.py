@@ -5,13 +5,13 @@ This is just for testing and exploring design options.
 """
 import os
 import sys
-import time
 import socket
 
 from configparser import ConfigParser as cparser
 
 from tweetspy_lib import get_ip_and_port
 from tweetspy_lib import process_fh
+from tweetspy_lib import tstamp
 
 # =========================================================================== #
 # Sort out or configuration file path.
@@ -54,32 +54,24 @@ assert local_ip == svr_ip
 
 # =========================================================================== #
 # Make, bind and set the socket to listen.
-s = socket.socket()
-s.bind(svr_address)
-s.listen(n_backlog)
+serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+serversocket.bind(svr_address)
+serversocket.listen(n_backlog)
 
 # =========================================================================== #
-# Make fake jobs and run.
-jobs = [str(i).encode() for i in os.listdir(os.path.curdir)]
+# The main loop.
+
 try:
 
-    # The main loop.
     RUN = True
     while RUN:
 
-        if not len(jobs):
-            job = input("enter job: ").encode()
-            if job == b"KILL_SERVER":
-                print("shutting down server")
-                sys.exit(0)
-            else:
-                jobs.append(job)
+        job = tstamp()
 
-        # Connect to a client worker.
-        conn, client_address =  s.accept()
-        print("request from", client_address)
+        # Connect to a worker.
+        (workersocket, workeraddress) = serversocket.accept()
+        print("request from", workeraddress)
 
-        job = jobs.pop()
         print("sending:", job)
         conn.send(job)
 
@@ -88,8 +80,6 @@ try:
 
         print("closing connection.")
         conn.close()
-
-
 
 except KeyboardInterrupt as err:
     print("\nshutting down program.")

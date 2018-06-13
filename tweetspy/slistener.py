@@ -1,6 +1,9 @@
-"""[summary]
+"""
+---------------------------------
+The TweetspyStreamListener Object
+---------------------------------
 
-[description]
+What is this thing?
 
 """
 from __future__ import absolute_import
@@ -8,12 +11,13 @@ from __future__ import division
 from __future__ import print_function
 
 from tweepy import StreamListener
-
 from tweepy.models import Status
-
 from tweepy.utils import import_simplejson
 
-from tweetspy_lib import *
+from tweetspy_lib import logging
+from tweetspy_lib import check_in_interval
+from tweetspy_lib import config
+from tweetspy_lib import new_stream_file
 
 json = import_simplejson()
 
@@ -23,6 +27,8 @@ class TweetspyStreamListener(StreamListener):
     def __init__(self):
         super(TweetspyStreamListener, self).__init__()
         self.count = 0
+        self.buffer = new_stream_file()
+        self.save_interval = config.getint('streamer', 'n_tweets_per_file')
 
     def on_connect(self):
         """Called once connected to streaming server.
@@ -30,14 +36,16 @@ class TweetspyStreamListener(StreamListener):
         This will be invoked once a successful response
         is received from the server. Allows the listener
         to perform some work prior to entering the read loop.
+
         """
-        logging.info(tstamp() + "<TweetspyStreamListener connected>")
+        return
 
     def on_data(self, raw_data):
         """Called when raw data is received from connection.
 
         Override this method if you wish to manually handle
         the stream data. Return False to stop stream and close connection.
+
         """
         data = json.loads(raw_data)
 
@@ -81,19 +89,39 @@ class TweetspyStreamListener(StreamListener):
             logging.error("Unknown message type: " + str(raw_data))
 
         if "user" in list(data.keys()):
-            print(data["user"]["screen_name"])
 
-        self.count += 1
-        if self.count > check_in_interval:
-            logging.info(tstamp() + "<TweetspyStreamListener disconnected>")
+            uname = data["user"]["screen_name"]
+            umsg = data["text"]
+            nspc = (20 - len(uname))
+            if nspc < 1:
+                nspc = 1
+            spc = " " * nspc
 
-            config.read(config.get('path', 'config_file'))
-            if not config.getboolean('runtime', 'run'):
-                print("killing stream")
-                return False
-            else:
-                print("resetting count.")
-                self.count = 0
+            print(uname, spc, umsg)
+
+            # Write the tweet to the buffer.
+            self.buffer.write(raw_data)
+
+            # Running counter.
+            self.count += 1
+
+            # Cycle the buffer.
+            if self.count % self.save_interval == 0:
+                self.swap_buffer()
+
+            # If the counter is a check-in interval:
+            if self.count % check_in_interval == 0:
+                config.read(config.get('path', 'config_file'))
+                if not config.getboolean('runtime', 'run'):
+                    print("\n\nkilling stream")
+                    return False
+
+    def swap_buffer(self):
+        self.buffer.flush()
+        self.buffer.close()
+        self.buffer = new_stream_file()
+        self.save_interval = config.getint('streamer', 'n_tweets_per_file')
+        print("new buffer file")
 
     def keep_alive(self):
         """Called when a keep-alive arrived."""
@@ -105,7 +133,8 @@ class TweetspyStreamListener(StreamListener):
 
     def on_exception(self, exception):
         """Called when an un-handled exception occurs."""
-        return
+        print(exception)
+        return True
 
     def on_delete(self, status_id, user_id):
         """Called when a delete notice arrives for a status."""
@@ -132,18 +161,15 @@ class TweetspyStreamListener(StreamListener):
 
     def on_error(self, status_code):
         """Called when a non-200 status code is returned."""
-        return
+        print(status_code)
+        return True
 
     def on_timeout(self):
         """Called when stream connection times out."""
         return
 
     def on_disconnect(self, notice):
-        """Called when twitter sends a disconnect notice.
-
-        Disconnect codes are listed here:
-        https://dev.twitter.com/docs/streaming-apis/messages#Disconnect_messages_disconnect
-        """
+        """Called when twitter sends a disconnect notice."""
         return
 
     def on_warning(self, notice):

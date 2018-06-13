@@ -26,13 +26,6 @@ from colorama import init
 
 from pymongo import MongoClient
 
-__all__ = [
-    "BLACK", "RED", "GREEN", "YELLOW",
-    "BLUE", "MAGENTA", "CYAN", "WHITE",
-    "ct", "tstamp", "filehandle", "process_tweet",
-    "get_ip_and_port", "config", "get_auth", "logging",
-    "check_in_interval", "twitterdb", 
-]
 
 # ========================================================================== #
 # DEFINITIONS
@@ -112,7 +105,7 @@ def filehandle(pth, ext="JSON"):
     """The file handle making function for all file handle creations.
 
     """
-    return os.path.join(pth, tstamp("fh") + ext)
+    return os.path.join(pth, tstamp("fh") + os.path.extsep + ext)
 
 
 def get_ip_and_port():
@@ -162,22 +155,31 @@ def get_auth():
 # <slistener.py> ----------------------------------------------------------- #
 
 
-def process_tweet(tweet, db=twitterdb, keep_cols=keep_columns):
+def new_stream_file():
+    fh = filehandle(config.get("path", "new_tweets_dir"), ext="txt")
+    n_tweets = config.getint("streamer", "n_tweets_per_file")
+    n_bytes = config.getint("streamer", "n_bytes_per_tweet")
+    buf_size = n_bytes * n_tweets
+    return open(fh, mode="w", buffering=buf_size)
+
+
+def save_rawtweets(tweets, ext="JSON"):
+    dir_path = config.get('path', 'new_tweets_dir')
+    fh = filehandle(dir_path, ext=ext)
+    with open(fh, mode="w", buffering=2048) as f:
+        for rtweet in tweets:
+            f.write(rtweet)
+
+
+def process_tweet(tweet, db, keep_cols=keep_columns):
     """This is how the system ingests a tweet into the database.
 
     """
-    user_data = {}
-    text = tweet["text"]
-    for key in list(tweet["user"].keys()):
-        if key in keep_cols:
-            user_data[key] = tweet["user"][key]
-            # print(key, ":", tweet["user"][key])
-    return text, user_data
 
     spaces = 25
     screen_name = tweet["user"]["screen_name"]
     location = tweet["user"]["location"]
-
+    location_tag = {"location": location}
     user_tag = {"screen_name": screen_name}
     if not db.people.find_one(user_tag):
         try:
@@ -185,17 +187,27 @@ def process_tweet(tweet, db=twitterdb, keep_cols=keep_columns):
         except Exception as err:
             print(err)
         else:
-            name_clr = RED
+            name_clr = BLACK
     else:
         name_clr = CYAN
-    try:
-        db[screen_name].insert_one(tweet)
-    except Exception as err:
-        print(err)
-    if not location:
-        loc_clr = YELLOW
+
+    if location is not None and location != "None":
+
+        if not db.location.find_one(location_tag):
+
+            try:
+
+                db.location.insert_one(location_tag)
+            except Exception as err:
+                print(err)
+            else:
+                loc_clr = BLACK
+        else:
+            loc_clr = GREEN
     else:
-        loc_clr = GREEN
+        loc_clr = BLACK
+
+    # Make the message & print it.
     spc = " " * (spaces - len(screen_name))
     msg = "\n" + ct(screen_name, name_clr) + spc + ct(str(location), loc_clr)
     sys.stdout.write(msg)
