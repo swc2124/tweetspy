@@ -9,15 +9,17 @@ What is this thing?
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
 
 from tweepy import StreamListener
 from tweepy.models import Status
 from tweepy.utils import import_simplejson
 
-from tweetspy_lib import logging
-from tweetspy_lib import check_in_interval
 from tweetspy_lib import config
 from tweetspy_lib import new_stream_file
+from tweetspy_lib import check_in_interval
+from tweetspy_lib import checkin_killstream
+from tweetspy_lib import checkin_pausestream
 
 json = import_simplejson()
 
@@ -86,18 +88,22 @@ class TweetspyStreamListener(StreamListener):
                 return False
 
         else:
-            logging.error("Unknown message type: " + str(raw_data))
-
+            return False
+            
+        # If this tweet contains text.
         if "user" in list(data.keys()):
 
+            # --------------------------------------------------------------- #
+            # Stupid print for fun.
             uname = data["user"]["screen_name"]
             umsg = data["text"]
             nspc = (20 - len(uname))
             if nspc < 1:
                 nspc = 1
             spc = " " * nspc
-
-            print(uname, spc, umsg)
+            if not umsg.startswith("RT"):
+                print("<tweet>", uname, spc, umsg.replace("\n", ""))
+            # --------------------------------------------------------------- #
 
             # Write the tweet to the buffer.
             self.buffer.write(raw_data)
@@ -105,15 +111,19 @@ class TweetspyStreamListener(StreamListener):
             # Running counter.
             self.count += 1
 
-            # Cycle the buffer.
+            # If the buffer is full, then cycle the buffer.
             if self.count % self.save_interval == 0:
                 self.swap_buffer()
 
-            # If the counter is a check-in interval:
+            # If the counter is a check-in interval, do all the check-in tasks.
             if self.count % check_in_interval == 0:
-                config.read(config.get('path', 'config_file'))
-                if not config.getboolean('runtime', 'run'):
-                    print("\n\nkilling stream")
+
+                # Shutdown if the `runtime` `run` value is False.
+                if checkin_killstream():
+                    return False
+
+                # pause if there are too many files in the new tweet directory.
+                if not checkin_pausestream():
                     return False
 
     def swap_buffer(self):
@@ -121,7 +131,7 @@ class TweetspyStreamListener(StreamListener):
         self.buffer.close()
         self.buffer = new_stream_file()
         self.save_interval = config.getint('streamer', 'n_tweets_per_file')
-        print("new buffer file")
+        print("<new buffer>", self.buffer.__sizeof__(), "bytes")
 
     def keep_alive(self):
         """Called when a keep-alive arrived."""
@@ -133,7 +143,8 @@ class TweetspyStreamListener(StreamListener):
 
     def on_exception(self, exception):
         """Called when an un-handled exception occurs."""
-        print(exception)
+        print("<caught><exception>", exception)
+        self.count += 1
         return True
 
     def on_delete(self, status_id, user_id):
@@ -161,7 +172,8 @@ class TweetspyStreamListener(StreamListener):
 
     def on_error(self, status_code):
         """Called when a non-200 status code is returned."""
-        print(status_code)
+        print("<error><non-200 status code>", status_code)
+        self.count += 1
         return True
 
     def on_timeout(self):
