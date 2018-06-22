@@ -1,4 +1,4 @@
-**CAUTION : This repository is currently being overhauled and in a state of disarray!**
+**CAUTION [2018-06-22]: This repository is currently being overhauled and in a state of disarray!**
 
 ---
 
